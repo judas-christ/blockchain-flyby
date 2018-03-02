@@ -1,0 +1,86 @@
+console.log('start')
+// Get a reference to the canvas object
+const canvas = document.getElementById('c')
+// Create an empty project and a view for the canvas:
+paper.setup(canvas)
+
+const y = paper.view.size.height / 2
+const width = paper.view.size.width
+console.log(y, width)
+
+const dy = 600
+const yMax = 600
+let y0 = 600
+const v = 300
+let dataArr = void 0
+let paths = void 0
+fetch('http://130.211.7.182/blocks')
+  .then(resp => resp.json())
+  .then(blocks => blocks.map(b => b.hash))
+  .then(hashes => hashes.map(hash => hash.split('').map(c => c.charCodeAt(0))))
+  .then(objs =>
+    objs.map((points, i) => ({
+      points,
+      z: i * 300 + 600
+    }))
+  )
+  .then(allData =>
+    allData.map(dataObj => {
+      const dx = width / dataObj.points.length
+      const path = new paper.Path()
+      path.strokeColor = 'black'
+      path.opacity = 1
+      dataObj.points.forEach((p, i) => {
+        path.add(new paper.Point(i * dx, p))
+      })
+      path.smooth()
+      path.applyMatrix = false
+      return path
+    })
+  )
+  .then(pths => (paths = pths))
+// .then(() => {
+//   paper.view.draw()
+//   paths[0].scale(0.95)
+//   console.log(paths[0].bounds, paths[0].position)
+//   paper.view.draw()
+// })
+
+function onFrame(e) {
+  if (!paths) return
+  // else if (y0 < 0) paper.view.onFrame = null
+
+  for (var i = 0; i < paths.length; i++) {
+    const path = paths[i]
+    const opacity = Math.max(0, Math.min(1, 1 - (y0 + i * dy) / yMax))
+    // path.opacity = opacity
+    const scale = Math.min(1, Math.max(0, yMax / (yMax + y0 + i * dy)))
+    path.scaling.x = scale
+    path.scaling.y = scale
+    // path.scale(scale)
+    // console.log(scale, path.matrix.scaling, path.applyMatrix)
+    // paper.view.onFrame = null
+    // if (e.time % 500000 < 5) {
+    //   console.log(i, opacity, scale)
+    // }
+  }
+
+  // paper.view.draw()
+
+  y0 = y0 - v * e.delta
+}
+
+paper.view.onFrame = onFrame
+// var data = '816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7';
+// var dataArray = data.split('').map(function (c) { return c.charCodeAt(0)});
+// console.log(dataArray);
+// // Create a Paper.js Path to draw a line into it:
+// var path = new Path();
+// // Give the stroke a color
+// path.strokeColor = 'black';
+// var start = new Point(0, dataArray[0]);
+// // Move to start and draw a line from there
+// path.moveTo(start);
+// var dx = width / dataArray.length;
+// dataArray.slice(1).forEach(function (p, i) { path.add(new Point((i + 1) * dx, p))});
+// path.smooth()

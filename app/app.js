@@ -2,6 +2,7 @@ import * as THREE from 'three'
 // import lineFromPoints from './lib/line-from-points'
 import interpolateLines from './lib/interpolate-lines'
 import getJson from './lib/get-json'
+import getData from './lib/get-data'
 
 const FAKE_HASH =
   '816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7'
@@ -90,7 +91,7 @@ function yFromChar(char) {
   return parseInt(char, 16) * 6
 }
 
-getJson('http://130.211.7.182/blocks')
+getData()
   .then(blocks => blocks.map(b => b.hash))
   .then(hashes => hashes.map(hash => hash.split('').map(yFromChar)))
   .then(data => [FLAT_LINE, FLAT_LINE, ...data, FLAT_LINE, FLAT_LINE])
@@ -134,7 +135,7 @@ function onTouchMove(e) {
   const touchY = e.touches[e.touches.length - 1].screenY
   if (typeof lastTouchY === 'number') {
     const dY = lastTouchY - touchY
-    touchVel += dY
+    touchVel += dY / 2
   }
   lastTouchY = touchY
   e.preventDefault()

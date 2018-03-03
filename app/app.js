@@ -58,33 +58,44 @@ camera.position.y = 250
 camera.position.z = CAMERA_Z
 camera.lookAt(new THREE.Vector3(0, 0, -100))
 
-// // Create a sine-like wave
-// var curve = new THREE.SplineCurve([
-//   new THREE.Vector2(-10, 0),
-//   new THREE.Vector2(-5, 5),
-//   new THREE.Vector2(0, 0),
-//   new THREE.Vector2(5, -5),
-//   new THREE.Vector2(10, 0)
-// ])
-
-// var points = curve.getPoints(50)
-// var geometry = new THREE.BufferGeometry().setFromPoints(points)
-
-// var material = new THREE.LineBasicMaterial({ color: 0xff0000 })
-
-// // Create the final object to add to the scene
-// var splineObject = new THREE.Line(geometry, material)
-// scene.add(splineObject)
-
 renderer.render(scene, camera)
 let t0 = 0
+const metaZElement = document.querySelector('.js-meta-z')
+const metaIdElement = document.querySelector('.js-meta-id')
+const metaHashElement = document.querySelector('.js-meta-hash')
+const metaTimeElement = document.querySelector('.js-meta-time')
+const metaDataElement = document.querySelector('.js-meta-data')
 function animate(t) {
   requestAnimationFrame(animate)
   // camera.position.setZ(CAMERA_Z - CAMERA_SPEED * (t - t0))
   const z = camera.position.z
   touchVel *= touchFriction
-  camera.position.setZ(touchVel * CAMERA_SPEED + z)
+  const newZ = touchVel * CAMERA_SPEED + z
+  camera.position.setZ(newZ)
   renderer.render(scene, camera)
+  metaZElement.textContent = -newZ
+  // change block data
+  if ((newZ + 400) % 500 > -100) {
+    // get block index
+    const index = -Math.ceil((newZ + 400) / 500)
+    setBlock(index)
+  }
+}
+
+let originalBlocks = void 0
+function setBlock(index) {
+  if (index in originalBlocks) {
+    const block = originalBlocks[index]
+    metaIdElement.textContent = block.index
+    metaHashElement.textContent = block.hash
+    metaTimeElement.textContent = block.timestamp
+    metaDataElement.textContent = JSON.stringify(block.data)
+  } else {
+    metaIdElement.textContent = ''
+    metaHashElement.textContent = ''
+    metaTimeElement.textContent = ''
+    metaDataElement.textContent = ''
+  }
 }
 
 function yFromChar(char) {
@@ -92,6 +103,7 @@ function yFromChar(char) {
 }
 
 getData()
+  .then(blocks => (originalBlocks = blocks))
   .then(blocks => blocks.map(b => b.hash))
   .then(hashes => hashes.map(hash => hash.split('').map(yFromChar)))
   .then(data => [FLAT_LINE, FLAT_LINE, ...data, FLAT_LINE, FLAT_LINE])

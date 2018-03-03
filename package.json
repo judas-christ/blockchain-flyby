@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prepare": "npm run build && cp ./public/* .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "brunch watch --server",
     "build": "brunch build --production"

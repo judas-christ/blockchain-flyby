@@ -13,7 +13,7 @@ exports.getChain = function(req, res) {
     },
     function(myRes) {
       res.setHeader('Access-Control-Allow-Origin', '*')
-      res.setEncoding('utf8')
+      res.setHeader('Content-Type', 'application/json')
       myRes.setEncoding('utf8')
       myRes.on('data', chunk => {
         res.write(chunk)
